@@ -1,5 +1,7 @@
 # isaacsim.dora.bridge
 
+**ATTENTION: dora node code can not work now.**
+
 This is a isaacsim.dora.bridge extension for communication between isaacsim and dora. 
 
 ## get-start
