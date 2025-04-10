@@ -14,6 +14,6 @@ Then you can see the gui of the extension.
 
 ![](./assets/isaacsim_dora_bridge.png)
 
-1. Set the Camera Path, Width, Height and Publish Rate and click **GENERATE DORA NODE**.
-2. You can get the code of dora node, copy them and paste to the yaml file.
+4. Set the Camera Path, Width, Height and Publish Rate and click **GENERATE DORA NODE**.
+5. You can get the code of dora node, copy them and paste to your yaml file.
 
