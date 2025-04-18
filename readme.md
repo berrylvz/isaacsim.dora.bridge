@@ -4,7 +4,7 @@
 
 This is a isaacsim.dora.bridge extension for communication between isaacsim and dora. 
 
-## get-start
+## get-started
 
 1. Clone this repository to a folder.
 2. Add extension search path (the folder above) in isaacsim (Window > $\equiv$ > Settings > Extension Search Paths).
