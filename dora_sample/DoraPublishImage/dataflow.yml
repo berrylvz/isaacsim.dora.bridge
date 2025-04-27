@@ -1,0 +1,3 @@
+nodes:
+  - id: receiver
+    path: ./receive_image.py

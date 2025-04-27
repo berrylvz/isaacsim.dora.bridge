@@ -1,0 +1,3 @@
+nodes:
+  - id: producer
+    path: ./produce_joint_state.py
