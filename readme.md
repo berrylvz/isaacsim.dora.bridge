@@ -56,4 +56,4 @@ This node is used to subscribe Joint State from Dora to isaacsim.
 6. Select the joint prim (and sharedMemName) in DoraSubscribeJointState node.
 7. Execute `dora build dataflow.yml` and `dora run dataflow.yml` in dora_sample/DoraSubscribeJointState.
 8. Click PLAY.
-9. Whenever you want to stop publish, just click STOP.
+9. Whenever you want to stop subscribe, just click STOP.
