@@ -51,7 +51,7 @@ This node is used to subscribe Joint State from Dora to isaacsim.
 4. Add an OnPlaybackTick node and an DoraSubscribeJointState node (category: Extension) in an Action graph.
 5. Connect the output Tick of OnPlayBackTick with the input Exec In of DoraSubscribeJointState.
 
-<img src="./assets/dora_publish_jointstate_actiongraph.png" style="width: 70%">
+<img src="./assets/dora_subscribe_jointstate_actiongraph.png" style="width: 70%">
 
 6. Select the joint prim (and sharedMemName) in DoraSubscribeJointState node.
 7. Execute `dora build dataflow.yml` and `dora run dataflow.yml` in dora_sample/DoraSubscribeJointState.
