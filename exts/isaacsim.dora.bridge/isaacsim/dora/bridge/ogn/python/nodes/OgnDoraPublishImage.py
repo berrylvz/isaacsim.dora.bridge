@@ -56,7 +56,7 @@ class OgnDoraPublishImageInternalState(BaseWriterNode):
             exist_shm.unlink()
         except:
             pass
-        size = cameraWidth * cameraHeight * 3 * 4
+        size = cameraWidth * cameraHeight * 3 * 8
         self.shm = shared_memory.SharedMemory(name=sharedMemName, create=True, size=size)
         
         self.dora_image_writer = DoraImageWriter()

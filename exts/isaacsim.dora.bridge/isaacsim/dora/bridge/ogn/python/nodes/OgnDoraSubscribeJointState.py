@@ -45,15 +45,16 @@ class OgnDoraSubscribeJointStateInternalState(BaseWriterNode):
         self.controller_handle = None
         self.dof_indices = None
         self.shm = None
+        self.shm_initialized = False
         super().__init__(initialize = False)
     
-    def initialize_controller_shm(self, sharedMemName):
+    def initialize_controller(self):
         self.controller_handle = SingleArticulation(self.robot_prim)
         self.controller_handle.initialize()
         dof_names = self.controller_handle.dof_names
         self.dof_indices = np.array([self.controller_handle.get_dof_index(name) for name in dof_names])
 
-        self.shm = shared_memory.SharedMemory(name=sharedMemName, create=False)
+        # self.shm = shared_memory.SharedMemory(name=sharedMemName, create=False)
 
 
 class OgnDoraSubscribeJointState:
@@ -73,13 +74,23 @@ class OgnDoraSubscribeJointState:
                 return False
             else:
                 state.robot_prim = db.inputs.targetPrim[0].GetString()
-            state.initialize_controller_shm(db.inputs.sharedMemName)
+            state.initialize_controller()
             state.initialized = True
+        if not state.shm_initialized:
+            try:
+                state.shm = shared_memory.SharedMemory(name=db.inputs.sharedMemName)
+                state.shm_initialized = True
+            except:
+                return True
+            
         
         # positions = pickle.loads(state.shm.buf)
         # print(positions)
         # db.outputs.positionCommand = positions
-        data = pickle.loads(state.shm.buf)
+        try:
+            data = pickle.loads(state.shm.buf)
+        except:
+            return True
         if data is not None:
             joint_actions = ArticulationAction()
             joint_actions.joint_indices = state.dof_indices

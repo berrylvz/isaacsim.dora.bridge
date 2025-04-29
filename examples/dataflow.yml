@@ -1,0 +1,5 @@
+nodes:
+  - id: inference
+    path: ./inference.py
+    inputs: 
+      tick: dora/timer/millis/100
