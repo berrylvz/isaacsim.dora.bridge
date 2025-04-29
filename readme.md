@@ -82,6 +82,8 @@ The action graph is as follows.
 
 Click PLAY first and then execute `dora build dataflow.yml` and `dora run dataflow.yml` in examples/.
 
+**NOTE**: There may be some errors, but you can neglect them.
+
 You can see the arm move randomly and a openCV plot displays the camera feed in real-time.
 
-In the end, just click STOP and stop Dora.
+In the end, just click STOP, press 'q' to stop plot and 'ctrl+c' to stop Dora.

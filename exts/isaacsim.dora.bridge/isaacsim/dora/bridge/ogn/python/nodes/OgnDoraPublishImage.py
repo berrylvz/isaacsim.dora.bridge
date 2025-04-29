@@ -11,6 +11,7 @@ Collection of OmniGraph code examples in Python:
 Collection of OmniGraph tutorials:
   https://docs.omniverse.nvidia.com/kit/docs/omni.graph.tutorials/latest/Overview.html
 """
+import carb
 import omni
 from omni.replicator.core import AnnotatorRegistry, Writer
 import numpy as np
@@ -18,6 +19,7 @@ from isaacsim.core.nodes import BaseWriterNode
 import omni.replicator.core as rep
 from multiprocessing import shared_memory
 import pickle
+from isaacsim.dora.bridge.ogn.OgnDoraPublishImageDatabase import OgnDoraPublishImageDatabase
 
 # modify from PytorchWriter in isaacsim.replicator.writers
 class DoraImageWriter(Writer):
@@ -45,9 +47,19 @@ class OgnDoraPublishImageInternalState(BaseWriterNode):
 
     def __init__(self):
         """Instantiate the per-node state information"""
+        self.handle = None
         self.dora_image_writer = None
         self.shm = None
         super().__init__(initialize = False)
+    
+    def on_stage_event(self, event: carb.events.IEvent):
+        if event.type == int(omni.timeline.TimelineEventType.STOP):
+            if self.handle:
+                self.handle.hydra_texture.set_updates_enabled(False)
+            self.initialized = False
+        elif event.type == int(omni.timeline.TimelineEventType.PLAY):
+            if self.handle:
+                self.handle.hydra_texture.set_updates_enabled(True)
     
     def set_param(self, cameraPrim, cameraWidth, cameraHeight, sharedMemName):
         try:
@@ -60,10 +72,11 @@ class OgnDoraPublishImageInternalState(BaseWriterNode):
         self.shm = shared_memory.SharedMemory(name=sharedMemName, create=True, size=size)
         
         self.dora_image_writer = DoraImageWriter()
-        rp = rep.create.render_product(
+        self.handle = rep.create.render_product(
             cameraPrim, (cameraWidth, cameraHeight), force_new = True
         )
-        self.dora_image_writer.attach(rp)
+        self.handle.hydra_texture.set_updates_enabled(True)
+        self.dora_image_writer.attach(self.handle)
         self.initialized = True
 
 class OgnDoraPublishImage:
@@ -91,4 +104,16 @@ class OgnDoraPublishImage:
                 # data_array = np.ndarray(image_data.shape, dtype=image_data.dtype, buffer=state.shm.buf)
                 # data_array[:] = image_data
             return True
+    
+    @staticmethod
+    def release_instance(node, graph_instance_id):
+        try:
+            state = OgnDoraPublishImageDatabase.per_instance_internal_state(node)
+        except Exception:
+            state = None
+            pass
 
+        if state is not None:
+            if state.handle:
+                state.handle.destroy()
+            state.handle = None
