@@ -34,7 +34,7 @@ This node is used to publish Image from isaacsim to Dora.
 + Only support RGB image currently. 
 + Isaacsim try to make its best to publish image, so if you want to accept image at a certain frame rate, just set a frequency to be received on the Dora side.
 
-**ATTENTION**: Unstabel, May have some errors.
+**ATTENTION**: Unstabe, may have some errors.
 
 ### DoraPublishJointState
 
@@ -50,7 +50,7 @@ This node is used to publish Joint State from isaacsim to Dora.
 8. Execute `dora build dataflow.yml` and `dora run dataflow.yml` in dora_sample/DoraPublishJointState.
 9. Whenever you want to stop publish, just click STOP.
 
-**NOTE**: Publish joint state as a one-dimensional list, the length of the list is the sum of dof and gripper.
+**NOTE**: Publish joint state as a one-dimensional list whose length is the sum of dof and gripper.
 
 ### DoraSubscribeJointState
 
