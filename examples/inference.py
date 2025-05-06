@@ -35,7 +35,7 @@ def create_shm():
     shm_dora_subscribe_joint_state = shared_memory.SharedMemory(name=shm_name_dora_subscribe_joint_state, create=True, size=size_shm_joint_state)
     return shm_dora_publish_image, shm_dora_publish_joint_state, shm_dora_subscribe_joint_state
 
-def destroy_shm():
+def destroy_shm(shm_dora_publish_image, shm_dora_publish_joint_state, shm_dora_subscribe_joint_state):
     shm_dora_publish_image.close()
     shm_dora_publish_joint_state.close()
     shm_dora_subscribe_joint_state.close()
@@ -76,7 +76,7 @@ def main(shm_dora_publish_image, shm_dora_publish_joint_state, shm_dora_subscrib
             cv2.imshow("image", image_data)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 return DoraStatus.STOP
-    destroy_shm()
+    destroy_shm(shm_dora_publish_image, shm_dora_publish_joint_state, shm_dora_subscribe_joint_state)
 
 
 if __name__ == "__main__":
