@@ -75,8 +75,13 @@ class OgnDoraPublishImageInternalState(BaseWriterNode):
         self.handle = rep.create.render_product(
             cameraPrim, (cameraWidth, cameraHeight), force_new = True
         )
-        self.handle.hydra_texture.set_updates_enabled(True)
-        self.dora_image_writer.attach(self.handle)
+        # self.handle.hydra_texture.set_updates_enabled(True)
+        try:
+            self.dora_image_writer.attach(self.handle)
+        except:
+            self.dora_image_writer.detach()
+            self.handle.destroy()
+            return
         self.initialized = True
 
 class OgnDoraPublishImage:
@@ -92,9 +97,8 @@ class OgnDoraPublishImage:
         state = db.per_instance_state
         if not state.initialized:
             state.set_param(db.inputs.cameraPrim[0].GetString(), db.inputs.cameraWidth, db.inputs.cameraHeight, db.inputs.sharedMemName)
-            state.initialized = True
+        # write into shm
         else:
-            # write into shm
             image_data = state.dora_image_writer.get_image_data()
             if image_data is not None:
                 image_data = image_data.reshape(-1).tolist()
@@ -103,7 +107,7 @@ class OgnDoraPublishImage:
                 
                 # data_array = np.ndarray(image_data.shape, dtype=image_data.dtype, buffer=state.shm.buf)
                 # data_array[:] = image_data
-            return True
+        return True
     
     @staticmethod
     def release_instance(node, graph_instance_id):
@@ -114,6 +118,11 @@ class OgnDoraPublishImage:
             pass
 
         if state is not None:
+            try:
+                state.dora_image_writer.detach()
+            except:
+                pass
             if state.handle:
                 state.handle.destroy()
             state.handle = None
+
