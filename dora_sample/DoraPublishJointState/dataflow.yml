@@ -1,3 +1,10 @@
 nodes:
+  - id: isaacsim_publish_joint
+    path: dynamic
+    outputs:
+      - joint_state
+
   - id: receiver
     path: ./receive_joint_state.py
+    inputs:
+      joint_state: isaacsim_publish_joint/joint_state

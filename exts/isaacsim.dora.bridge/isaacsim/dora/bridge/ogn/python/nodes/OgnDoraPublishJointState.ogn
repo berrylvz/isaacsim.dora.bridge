@@ -23,10 +23,15 @@
                 "description": "The target robot prim with robot articulation root. Ensure robotPath is empty for this to be considered.", 
                 "optional": true
             }, 
-            "sharedMemName": {
+            "nodeId": {
                 "type": "string", 
-                "description": "Name of shared memory", 
-                "default": "dora_publish_joint_state"
+                "description": "Id of Dora node", 
+                "default": "isaacsim_publish_joint"
+            }, 
+            "outputId": {
+                "type": "string", 
+                "description": "Id of output of Dora node", 
+                "default": "joint_state"
             }
         }
     }

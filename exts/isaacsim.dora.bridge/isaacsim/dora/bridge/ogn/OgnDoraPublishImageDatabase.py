@@ -23,8 +23,9 @@ class OgnDoraPublishImageDatabase(og.Database):
         ('inputs:cameraPrim', 'target', 0, None, 'Usd prim reference to the camera associated with this render product', {}, True, None, False, ''),
         ('inputs:execIn', 'execution', 0, None, 'Input execution trigger', {}, True, None, False, ''),
         ('inputs:cameraHeight', 'uint', 0, None, 'Height of the render product, in pixels', {ogn.MetadataKeys.DEFAULT: '480'}, True, 480, False, ''),
-        ('inputs:cameraWidth', 'uint', 0, None, 'Width of the render product, in pixels', {ogn.MetadataKeys.DEFAULT: '640'}, True, 640, False, ''),
-        ('inputs:sharedMemName', 'string', 0, None, 'Name of shared memory', {ogn.MetadataKeys.DEFAULT: '"dora_publish_image"'}, True, "dora_publish_image", False, ''),
+        ('inputs:cameraWidth', 'uint', 0, None, 'Width of the render product, in pixels', {ogn.MetadataKeys.DEFAULT: '640'}, True, 640, False, ''), 
+        ('inputs:nodeId', 'string', 0, None, 'Id of Dora node', {ogn.Metadatakeys.DEFAULT: '"isaacsim_publish_image"'}, True, "isaacsim_publish_image", False, ''), 
+        ('inputs:outputId', 'string', 0, None, 'Id of output of Dora node', {ogn.Metadatakeys.DEFAULT: '"image"'}, True, "image", False, ''), 
     ])
 
     @classmethod
@@ -32,16 +33,17 @@ class OgnDoraPublishImageDatabase(og.Database):
         role_data = super()._populate_role_data()
         role_data.inputs.cameraPrim = og.AttributeRole.TARGET
         role_data.inputs.execIn = og.AttributeRole.EXECUTION
-        role_data.inputs.sharedMemName = og.AttributeRole.TEXT
+        role_data.inputs.nodeId = og.AttributeRole.TEXT
+        role_data.inputs.outputId = og.AttributeRole.TEXT
         return role_data
     
     class ValuesForInputs(og.DynamicAttributeAccess):
-        LOCAL_PROPERTY_NAMES = {"execIn", "cameraWidth", "cameraHeight", "sharedMemName", "_setting_locked", "_batchedReadAttributes", "_batchedReadValues"}
+        LOCAL_PROPERTY_NAMES = {"execIn", "cameraWidth", "cameraHeight", "nodeId", "outputId", "_setting_locked", "_batchedReadAttributes", "_batchedReadValues"}
         def __init__(self, node: og.Node, attributes, dynamic_attributes: og.DynamicAttributeInterface):
             context = node.get_graph().get_default_graph_context()
             super().__init__(context, node, attributes, dynamic_attributes)
-            self._batchedReadAttributes = [self._attributes.execIn, self._attributes.cameraHeight, self._attributes.cameraWidth, self._attributes.sharedMemName]
-            self._batchedReadValues = [None, 480, 640, "dora_publish_image"]
+            self._batchedReadAttributes = [self._attributes.execIn, self._attributes.cameraHeight, self._attributes.cameraWidth, self._attributes.nodeId, self._attributes.outputId]
+            self._batchedReadValues = [None, 480, 640, "isaacsim_publish_image", "image"]
         
         @property
         def cameraPrim(self):

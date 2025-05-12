@@ -32,10 +32,15 @@
                 "description": "Height of the render product, in pixels", 
                 "default": 480
             },  
-            "sharedMemName": {
+            "nodeId": {
                 "type": "string", 
-                "description": "Name of shared memory", 
-                "default": "dora_publish_image"
+                "description": "Id of Dora node", 
+                "default": "isaacsim_publish_image"
+            }, 
+            "outputId": {
+                "type": "string", 
+                "description": "Id of output of Dora node", 
+                "default": "image"
             }
         }
     }

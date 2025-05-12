@@ -1,3 +1,10 @@
 nodes:
+  - id: isaacsim_publish_image
+    path: dynamic
+    outputs:
+      - image
+  
   - id: receiver
     path: ./receive_image.py
+    inputs:
+      image: isaacsim_publish_image/image

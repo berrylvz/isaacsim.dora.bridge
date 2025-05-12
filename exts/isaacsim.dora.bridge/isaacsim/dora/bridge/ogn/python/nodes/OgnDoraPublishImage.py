@@ -17,9 +17,9 @@ from omni.replicator.core import AnnotatorRegistry, Writer
 import numpy as np
 from isaacsim.core.nodes import BaseWriterNode
 import omni.replicator.core as rep
-from multiprocessing import shared_memory
-import pickle
 from isaacsim.dora.bridge.ogn.OgnDoraPublishImageDatabase import OgnDoraPublishImageDatabase
+from dora import Node
+import pyarrow as pa
 
 # modify from PytorchWriter in isaacsim.replicator.writers
 class DoraImageWriter(Writer):
@@ -49,7 +49,7 @@ class OgnDoraPublishImageInternalState(BaseWriterNode):
         """Instantiate the per-node state information"""
         self.handle = None
         self.dora_image_writer = None
-        self.shm = None
+        self.node = None
         super().__init__(initialize = False)
     
     def on_stage_event(self, event: carb.events.IEvent):
@@ -61,15 +61,12 @@ class OgnDoraPublishImageInternalState(BaseWriterNode):
             if self.handle:
                 self.handle.hydra_texture.set_updates_enabled(True)
     
-    def set_param(self, cameraPrim, cameraWidth, cameraHeight, sharedMemName):
+    def set_param(self, cameraPrim, cameraWidth, cameraHeight, nodeId):
         try:
-            exist_shm = shared_memory.SharedMemory(name = sharedMemName)
-            exist_shm.close()
-            exist_shm.unlink()
+            self.node = Node(nodeId)
         except:
-            pass
-        size = cameraWidth * cameraHeight * 3 * 8
-        self.shm = shared_memory.SharedMemory(name=sharedMemName, create=True, size=size)
+            print(f"fail to init Dora node {nodeId}")
+            return
         
         self.dora_image_writer = DoraImageWriter()
         self.handle = rep.create.render_product(
@@ -96,17 +93,20 @@ class OgnDoraPublishImage:
     def compute(db) -> bool:
         state = db.per_instance_state
         if not state.initialized:
-            state.set_param(db.inputs.cameraPrim[0].GetString(), db.inputs.cameraWidth, db.inputs.cameraHeight, db.inputs.sharedMemName)
-        # write into shm
+            state.set_param(db.inputs.cameraPrim[0].GetString(), db.inputs.cameraWidth, db.inputs.cameraHeight, db.inputs.nodeId)
         else:
             image_data = state.dora_image_writer.get_image_data()
             if image_data is not None:
+                data = dict()
+                height, width, channels = image_data.shape
+                data['layout'] = {
+                    'height': height, 
+                    'width': width, 
+                    'channels': channels
+                }
                 image_data = image_data.reshape(-1).tolist()
-                image_data = pickle.dumps(image_data)
-                db.per_instance_state.shm.buf[:len(image_data)] = image_data
-                
-                # data_array = np.ndarray(image_data.shape, dtype=image_data.dtype, buffer=state.shm.buf)
-                # data_array[:] = image_data
+                data['image'] = image_data
+                state.node.send_output(output_id=db.inputs.outputId, data=pa.array([image_data]), meta_data={})
         return True
     
     @staticmethod

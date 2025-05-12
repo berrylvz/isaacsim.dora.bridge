@@ -30,9 +30,9 @@ import numpy as np
 import traceback
 from isaacsim.core.nodes import BaseWriterNode
 import omni.replicator.core as rep
-from multiprocessing import shared_memory
 from isaacsim.core.prims import SingleArticulation
-import pickle
+from dora import Node
+import pyarrow as pa
 
 
 class OgnDoraPublishJointStateInternalState(BaseWriterNode):
@@ -43,23 +43,21 @@ class OgnDoraPublishJointStateInternalState(BaseWriterNode):
         self.robot_prim = None
         self.controller_handle = None
         self.dof_indices = None
-        self.shm = None
+        self.node = None
         super().__init__(initialize = False)
     
-    def initialize_controller_shm(self, sharedMemName):
+    def initialize_controller_node(self, nodeId):
         self.controller_handle = SingleArticulation(self.robot_prim)
         self.controller_handle.initialize()
         dof_names = self.controller_handle.dof_names
         self.dof_indices = np.array([self.controller_handle.get_dof_index(name) for name in dof_names])
 
         try:
-            exist_shm = shared_memory.SharedMemory(name = sharedMemName)
-            exist_shm.close()
-            exist_shm.unlink()
+            self.node = Node(nodeId)
         except:
-            pass
-        size = 500
-        self.shm = shared_memory.SharedMemory(name=sharedMemName, create=True, size=size)
+            print(f"fail to init Dora node {nodeId}")
+            return
+        self.initialized = True
 
 
 class OgnDoraPublishJointState:
@@ -79,14 +77,9 @@ class OgnDoraPublishJointState:
                 return False
             else:
                 state.robot_prim = db.inputs.targetPrim[0].GetString()
-            state.initialize_controller_shm(db.inputs.sharedMemName)
-            state.initialized = True
+            state.initialize_controller_node(db.inputs.nodeId)
         positions = state.controller_handle.get_joint_positions(state.dof_indices)
         if positions is not None:
-            positions = pickle.dumps(positions)
-            state.shm.buf[:len(positions)] = positions
-            # positions = np.array(positions)
-            # data_array = np.ndarray(positions.shape, dtype=positions.dtype, buffer=state.shm.buf)
-            # data_array = positions
+            state.node.send_output(output_id=db.inputs.outputId, data=pa.array(positions), metadata={})
         return True
 

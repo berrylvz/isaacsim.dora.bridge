@@ -30,11 +30,10 @@ import numpy as np
 import traceback
 from isaacsim.core.nodes import BaseWriterNode
 import omni.replicator.core as rep
-from multiprocessing import shared_memory
 from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
-import pickle
-
+from dora import Node
+import pyarrow as pa
 
 class OgnDoraSubscribeJointStateInternalState(BaseWriterNode):
     """Convenience class for maintaining per-node state information"""
@@ -44,17 +43,20 @@ class OgnDoraSubscribeJointStateInternalState(BaseWriterNode):
         self.robot_prim = None
         self.controller_handle = None
         self.dof_indices = None
-        self.shm = None
-        self.shm_initialized = False
+        self.node = None
         super().__init__(initialize = False)
     
-    def initialize_controller(self):
+    def initialize_controller_node(self, nodeId):
         self.controller_handle = SingleArticulation(self.robot_prim)
         self.controller_handle.initialize()
         dof_names = self.controller_handle.dof_names
         self.dof_indices = np.array([self.controller_handle.get_dof_index(name) for name in dof_names])
-
-        # self.shm = shared_memory.SharedMemory(name=sharedMemName, create=False)
+        try:
+            self.node = Node(nodeId)
+        except:
+            print(f"fail to init node {nodeId}")
+            return
+        self.initialized = True
 
 
 class OgnDoraSubscribeJointState:
@@ -74,27 +76,17 @@ class OgnDoraSubscribeJointState:
                 return False
             else:
                 state.robot_prim = db.inputs.targetPrim[0].GetString()
-            state.initialize_controller()
-            state.initialized = True
-        if not state.shm_initialized:
-            try:
-                state.shm = shared_memory.SharedMemory(name=db.inputs.sharedMemName)
-                state.shm_initialized = True
-            except:
+            state.initialize_controller_node(db.inputs.nodeId)
+        else:
+            event = state.node.next()
+            if event is None:
                 return True
-            
-        
-        # positions = pickle.loads(state.shm.buf)
-        # print(positions)
-        # db.outputs.positionCommand = positions
-        try:
-            data = pickle.loads(state.shm.buf)
-        except:
-            return True
-        if data is not None:
-            joint_actions = ArticulationAction()
-            joint_actions.joint_indices = state.dof_indices
-            joint_actions.joint_positions = data
-            state.controller_handle.apply_action(control_actions=joint_actions)
+            if event["type"] == "INPUT":
+                if event["id"] == db.inputs.inputId:
+                    data = event["value"].to_pylist()
+                    joint_actions = ArticulationAction()
+                    joint_actions.joint_indices = state.dof_indices
+                    joint_actions.joint_positions = data
+                    state.controller_handle.apply_action(control_actions=joint_actions)
         return True
 

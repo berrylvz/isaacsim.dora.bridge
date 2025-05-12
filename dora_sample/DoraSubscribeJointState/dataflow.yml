@@ -1,3 +1,12 @@
 nodes:
+  - id: isaacsim_subscribe_joint
+    path: dynamic
+    inputs:
+      joint_state: producer/joint_state
+
   - id: producer
     path: ./produce_joint_state.py
+    inputs:
+      tick: dora/timer/millis/100
+    outputs:
+      - joint_state

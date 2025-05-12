@@ -1,5 +1,24 @@
 nodes:
+  - id: isaacsim_publish_image
+    path: dynamic
+    outputs:
+      - image
+
+  - id: isaacsim_publish_joint
+    path: dynamic
+    outputs:
+      - joint_state
+  
+  - id: isaacsim_subscribe_joint
+    path: dynamic
+    inputs:
+      joint_state: inference/joint_state
+
   - id: inference
     path: ./inference.py
     inputs: 
       tick: dora/timer/millis/100
+      image: isaacsim_publish_image/image
+      joint_state: isaacsim_publish_joint/joint_state
+    outputs:
+      - joint_state
