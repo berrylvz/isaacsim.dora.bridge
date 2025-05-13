@@ -106,7 +106,7 @@ class OgnDoraPublishImage:
                 }
                 image_data = image_data.reshape(-1).tolist()
                 data['image'] = image_data
-                state.node.send_output(output_id=db.inputs.outputId, data=pa.array([image_data]), meta_data={})
+                state.node.send_output(output_id=db.inputs.outputId, data=pa.array([image_data]), metadata={})
         return True
     
     @staticmethod

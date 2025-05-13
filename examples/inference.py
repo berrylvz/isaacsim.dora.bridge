@@ -30,7 +30,7 @@ def main():
             if image is not None:
                 image_data = image["image"]
                 layout = image["layout"]
-                image_data = np.array(image_data, dtype=np.uint8).reshape(layout["width"], layout["height"], layout["channels"])
+                image_data = np.array(image_data, dtype=np.uint8).reshape(layout["height"], layout["width"], layout["channels"])
                 image_data = cv2.cvtColor(image_data, cv2.COLOR_RGB2BGR)
                 image_data = np.transpose(image_data, (1, 0, 2))
                 cv2.imshow("image", image_data)
